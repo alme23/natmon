@@ -1,0 +1,178 @@
+package components
+
+import (
+	"fmt"
+	"github.com/alme23/natmon/internal/model"
+	"github.com/alme23/natmon/internal/presenter"
+)
+
+templ DeviceDetails(device model.Device) {
+	<div class="space-y-4 fade-in">
+		<!-- Заголовок с кнопками действий -->
+		<div class="border-b pb-4">
+			<div class="flex justify-between items-start">
+				<div>
+					<h3 class="text-lg font-semibold text-gray-900">
+						if device.Name != "" {
+							{ device.Name }
+						} else {
+							{ device.IPAddress }
+						}
+					</h3>
+				</div>
+				<div class="flex space-x-2">
+					<!-- Кнопка редактирования -->
+					<button class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+							hx-get={ fmt.Sprintf("/devices/%d/edit", device.ID) }
+							hx-target="#editModalContent"
+							hx-swap="innerHTML"
+							onclick="document.getElementById('editModal').classList.remove('hidden')"
+							title="Редактировать устройство">
+						<img src="/static/icons/edit.svg" class="w-5 h-5" alt="Редактировать"/>
+					</button>
+					<!-- Кнопка удаления -->
+					<button class="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+							hx-post={ fmt.Sprintf("/devices/%d/delete", device.ID) }
+							hx-target="#devicesTable"
+							hx-swap="innerHTML"
+							hx-confirm="Удалить устройство?"
+							title="Удалить устройство">
+						<img src="/static/icons/delete.svg" class="w-5 h-5" alt="Удалить"/>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Основная информация -->
+		<div class="space-y-3">
+            <div class="flex justify-between">
+    			<span class="text-sm text-gray-500">IP-адрес</span>
+    			<span class="text-sm font-medium">
+                <a href={ fmt.Sprintf("http://%s", device.IPAddress) } class="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors" target="_blank">
+                    { device.IPAddress }
+                </a>
+                </span>
+    		</div>
+            <div class="flex justify-between">
+               	<span class="text-sm text-gray-500">MAC-адрес</span>
+               	<span class="text-sm font-medium">
+                    if device.MACAddress != "" {
+						{ device.MACAddress }
+					} else {
+						<span class="text-gray-400">-</span>
+					}
+                </span>
+            </div>
+
+			<div class="flex justify-between">
+				<span class="text-sm text-gray-500">Локация</span>
+				<span class="text-sm font-medium">
+					if device.Location != "" {
+						{ device.Location }
+					} else {
+						<span class="text-gray-400">-</span>
+					}
+				</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="text-sm text-gray-500">Последний опрос</span>
+				<span class="text-sm font-medium">
+					if device.LastPollTime.IsZero() {
+						<span class="text-gray-400">Никогда</span>
+					} else {
+						{ device.LastPollTime.Format("02.01.2006 15:04:05") }
+					}
+				</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="text-sm text-gray-500">Статус</span>
+				if device.LastPollSuccess {
+					<span class="text-sm font-medium text-green-600">Успешно</span>
+				} else {
+					<span class="text-sm font-medium text-red-600">Ошибка</span>
+				}
+			</div>
+		</div>
+
+		<!-- Метрики -->
+		if device.Metrics != nil {
+			<div class="border-t pt-4">
+				<h4 class="text-sm font-medium text-gray-900 mb-3">Метрики</h4>
+				<div class="space-y-2">
+					<div class="flex justify-between">
+						<span class="text-sm text-gray-500">Температура</span>
+						<span class="text-sm font-medium">
+							if device.Metrics.Temperature != "" {
+								{ device.Metrics.Temperature + " °C" }
+							} else {
+								<span class="text-gray-400">-</span>
+							}
+						</span>
+					</div>
+					<div class="flex justify-between">
+						<span class="text-sm text-gray-500">Питание 1</span>
+						<span class="text-sm font-medium">
+							if device.Metrics.InternalPower1 != "" {
+								{ device.Metrics.InternalPower1 + " V" }
+							} else {
+								<span class="text-gray-400">-</span>
+							}
+						</span>
+					</div>
+					<div class="flex justify-between">
+						<span class="text-sm text-gray-500">Питание 2</span>
+						<span class="text-sm font-medium">
+							if device.Metrics.InternalPower2 != "" {
+								{ device.Metrics.InternalPower2 + " V" }
+							} else {
+								<span class="text-gray-400">-</span>
+							}
+						</span>
+					</div>
+				</div>
+			</div>
+		}
+
+		<!-- Алармы -->
+		if device.Alarms != nil {
+			<div class="border-t pt-4">
+				<h4 class="text-sm font-medium text-gray-900 mb-3">Алармы</h4>
+				<div class="space-y-2">
+					for _, alarm := range presenter.NewAlarmPresenter(device.Alarms).GetAlarms() {
+						<div class="flex justify-between items-center">
+							<span class="text-xs text-gray-600">{ alarm.Label }</span>
+							if alarm.Active {
+								<span class="w-2 h-2 rounded-full bg-red-500" title="Активен"></span>
+							} else {
+								<span class="w-2 h-2 rounded-full bg-green-500" title="Норма"></span>
+							}
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		<!-- Каналы -->
+		<div class="border-t pt-4">
+			<h4 class="text-sm font-medium text-gray-900 mb-3">Каналы</h4>
+			<div class="space-y-2">
+				for _, ch := range device.Channels {
+					<div class="p-2 bg-gray-50 rounded">
+						<div class="flex items-center justify-between">
+							<span class="text-xs font-medium">Канал { ch.ChannelID }</span>
+							<span class={ "text-xs " + presenter.NewChannelPresenter(&ch).TextColor() }>
+								{ presenter.NewChannelPresenter(&ch).StateString() }
+							</span>
+						</div>
+						if ch.Stream != "" {
+							<div class="text-xs text-gray-500 mt-1">Stream: { ch.Stream }</div>
+						}
+						if ch.Server != "" {
+							<div class="text-xs text-gray-500">Server: { ch.Server }</div>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}

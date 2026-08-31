@@ -1,0 +1,45 @@
+package components
+
+templ Icon(name string, className string) {
+	<img src={ "/static/icons/" + name + ".svg" } class={ className } alt={ name }/>
+}
+
+templ RefreshIcon(className string) {
+	@Icon("refresh", className)
+}
+
+templ EditIcon(className string) {
+	@Icon("edit", className)
+}
+
+templ DeleteIcon(className string) {
+	@Icon("delete", className)
+}
+
+templ CloseIcon(className string) {
+	@Icon("close", className)
+}
+
+templ InfoIcon(className string) {
+	@Icon("info", className)
+}
+
+templ WarningIcon(className string) {
+	@Icon("warning", className)
+}
+
+templ ErrorIcon(className string) {
+	@Icon("error", className)
+}
+
+templ SuccessIcon(className string) {
+	@Icon("success", className)
+}
+
+templ DeviceIcon(className string) {
+	@Icon("device", className)
+}
+
+templ ChannelIcon(className string) {
+	@Icon("channel", className)
+}

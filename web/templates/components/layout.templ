@@ -1,0 +1,12 @@
+package components
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="ru">
+		@Head(title)
+		<body class="bg-gray-100 min-h-screen" x-data="natmonApp()" x-init="init()">
+			{ children... }
+			<div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+		</body>
+	</html>
+}

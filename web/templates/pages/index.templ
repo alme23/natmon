@@ -1,0 +1,101 @@
+package pages
+
+import (
+	"github.com/alme23/natmon/web/templates/components"
+)
+
+templ IndexPage() {
+	@components.Layout("Управление устройствами") {
+		@components.Navbar()
+
+		<div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<div class="flex flex-col lg:flex-row gap-6">
+				<!-- Левая колонка: таблица устройств -->
+				<div class="lg:w-2/3 xl:w-3/4 flex-shrink-0">
+					<div class="bg-white rounded-lg shadow-sm p-6">
+						<div class="flex justify-between items-center mb-6">
+							<h2 class="text-lg font-medium text-gray-900">Устройства</h2>
+							<button onclick="document.getElementById('addModal').classList.remove('hidden')"
+									class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+								Добавить устройство
+							</button>
+						</div>
+
+						<div id="devicesTable"
+							 hx-get="/devices/table"
+							 hx-trigger="load, every 30s"
+							 hx-swap="innerHTML">
+							<div class="text-center py-8">
+								<div class="loading-spinner mx-auto"></div>
+								<p class="text-gray-500 text-sm mt-2">Загрузка устройств...</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Правая колонка: детали устройства -->
+				<div class="lg:w-1/3 xl:w-1/4 flex-shrink-0">
+					<div class="bg-white rounded-lg shadow-sm p-6 sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto">
+						<div id="deviceDetails">
+							<div class="text-center py-12">
+								<img src="/static/icons/device.svg" class="w-16 h-16 text-gray-300 mx-auto mb-4" alt="Устройство"/>
+								<p class="text-gray-500 text-lg">Выберите устройство</p>
+								<p class="text-gray-400 text-sm mt-2">Нажмите на IP адрес в таблице</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Модальное окно добавления -->
+		<div id="addModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-50">
+			<div class="relative top-20 mx-auto p-5 w-96 bg-white rounded-md shadow-lg">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-lg font-medium">Добавить устройство</h3>
+					<button onclick="document.getElementById('addModal').classList.add('hidden')" class="text-gray-400">
+						<img src="/static/icons/close.svg" class="w-6 h-6" alt="Закрыть"/>
+					</button>
+				</div>
+				<form hx-post="/devices/create"
+      hx-target="#devicesTable tbody"
+      hx-swap="beforeend"
+      hx-on::after-request="if(event.detail.successful) { this.reset(); document.getElementById('addModal').classList.add('hidden'); }">
+					<div class="mb-4">
+						<label class="block text-sm font-medium mb-2">IP адрес *</label>
+						<input type="text" name="ip_address" required
+							   pattern="^(\d{1,3}\.){3}\d{1,3}$"
+							   class="mt-1 block w-full rounded-md border-gray-300 px-3 py-2"/>
+					</div>
+					<div class="mb-4">
+						<label class="block text-sm font-medium mb-2">SNMP Port</label>
+						<input type="number" name="snmp_port" value="161"
+							   class="mt-1 block w-full rounded-md border-gray-300 px-3 py-2"/>
+					</div>
+					<div class="mb-4">
+						<label class="block text-sm font-medium mb-2">Community</label>
+						<input type="text" name="snmp_community" value="private"
+							   class="mt-1 block w-full rounded-md border-gray-300 px-3 py-2"/>
+					</div>
+					<div class="flex justify-end space-x-3">
+						<button type="button" onclick="document.getElementById('addModal').classList.add('hidden')"
+								class="px-4 py-2 text-sm text-gray-700 bg-white border rounded-md">
+							Отмена
+						</button>
+						<button type="submit"
+								class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md">
+							Добавить
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Модальное окно редактирования -->
+		<div id="editModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-50">
+			<div class="relative top-20 mx-auto p-5 w-96 bg-white rounded-md shadow-lg">
+				<div id="editModalContent"></div>
+			</div>
+		</div>
+	}
+}
